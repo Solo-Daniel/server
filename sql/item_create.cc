@@ -1764,6 +1764,17 @@ protected:
   virtual ~Create_func_rand() {}
 };
 
+class Create_func_release_all_locks : public Create_func_arg0
+{
+public:
+  virtual Item *create_builder(THD *thd);
+
+  static Create_func_release_all_locks s_singleton;
+
+protected:
+  Create_func_release_all_locks() {}
+  virtual ~Create_func_release_all_locks() {}
+};
 
 class Create_func_release_lock : public Create_func_arg1
 {
@@ -4761,6 +4772,14 @@ Create_func_rand::create_native(THD *thd, LEX_CSTRING *name,
   return func;
 }
 
+Create_func_release_all_locks Create_func_release_all_locks::s_singleton;
+Item*
+Create_func_release_all_locks::create_builder(THD *thd)
+{
+  thd->lex->set_stmt_unsafe(LEX::BINLOG_STMT_UNSAFE_SYSTEM_FUNCTION);
+  thd->lex->safe_to_cache_query= 0;
+  return (new (thd->mem_root) Item_func_release_all_locks(thd));
+}
 
 Create_func_release_lock Create_func_release_lock::s_singleton;
 
@@ -5525,9 +5544,9 @@ static Native_func_registry func_array[] =
   { { STRING_WITH_LEN("REGEXP_SUBSTR") }, BUILDER(Create_func_regexp_substr)},
   { { STRING_WITH_LEN("RADIANS") }, BUILDER(Create_func_radians)},
   { { STRING_WITH_LEN("RAND") }, BUILDER(Create_func_rand)},
+  { { STRING_WITH_LEN("RELEASE_ALL_LOCKS") }, BUILDER(Create_func_release_all_locks)},
   { { STRING_WITH_LEN("RELEASE_LOCK") }, BUILDER(Create_func_release_lock)},
-  { { STRING_WITH_LEN("REPLACE_ORACLE") },
-      BUILDER(Create_func_replace_oracle)},
+  { { STRING_WITH_LEN("REPLACE_ORACLE") }, BUILDER(Create_func_replace_oracle)},
   { { STRING_WITH_LEN("REVERSE") }, BUILDER(Create_func_reverse)},
   { { STRING_WITH_LEN("ROUND") }, BUILDER(Create_func_round)},
   { { STRING_WITH_LEN("RPAD") }, BUILDER(Create_func_rpad)},
@@ -5546,8 +5565,7 @@ static Native_func_registry func_array[] =
   { { STRING_WITH_LEN("SQRT") }, BUILDER(Create_func_sqrt)},
   { { STRING_WITH_LEN("STRCMP") }, BUILDER(Create_func_strcmp)},
   { { STRING_WITH_LEN("STR_TO_DATE") }, BUILDER(Create_func_str_to_date)},
-  { { STRING_WITH_LEN("SUBSTR_ORACLE") },
-      BUILDER(Create_func_substr_oracle)},
+  { { STRING_WITH_LEN("SUBSTR_ORACLE") }, BUILDER(Create_func_substr_oracle)},
   { { STRING_WITH_LEN("SUBSTRING_INDEX") }, BUILDER(Create_func_substr_index)},
   { { STRING_WITH_LEN("SUBTIME") }, BUILDER(Create_func_subtime)},
   { { STRING_WITH_LEN("TAN") }, BUILDER(Create_func_tan)},
