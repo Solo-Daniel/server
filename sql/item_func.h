@@ -2684,21 +2684,12 @@ class Item_func_get_lock :public Item_long_func
 
 class Item_func_release_all_locks :public Item_long_func
 {
-  String value;
 public:
   Item_func_release_all_locks(THD *thd): Item_long_func(thd) {}
   longlong val_int() override;
   const char *func_name() const override { return "release_all_locks"; }
-  bool fix_length_and_dec() { max_length= 10; maybe_null= 0; return FALSE; }
-  table_map used_tables() const { return 0; }
-  bool const_item() const { return 0; }
-  bool is_expensive() { return 1; }
-  bool check_vcol_func_processor(void *arg)
-  {
-    return mark_unsupported_function(func_name(), "()", arg, VCOL_IMPOSSIBLE);
-  }
-  Item *get_copy(THD *thd)
-  { return get_item_copy<Item_func_release_all_locks>(thd,this); }
+  bool fix_length_and_dec() override { max_length= 10; unsigned_flag=1; maybe_null= 0; return FALSE; }
+  Item *get_copy(THD *thd) override  { return get_item_copy<Item_func_release_all_locks>(thd,this); }
 };
 
 
